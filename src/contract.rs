@@ -1,14 +1,23 @@
-use crate::msg::{GreetResp, QueryMsg};
+use crate::msg::{GreetResp, InstantiateMsg, QueryMsg};
+use crate::state::ADMINS;
+// --snip--
 use cosmwasm_std::{
     to_binary, Binary, Deps, DepsMut, Empty, Env, MessageInfo, Response, StdResult,
 };
 
 pub fn instantiate(
-    _deps: DepsMut,
+    deps: DepsMut,
     _env: Env,
     _info: MessageInfo,
-    _msg: Empty,
+    msg: InstantiateMsg,
 ) -> StdResult<Response> {
+    let admins: StdResult<Vec<_>> = msg
+        .admins
+        .into_iter()
+        .map(|addr| deps.api.addr_validate(&addr))
+        .collect();
+    ADMINS.save(deps.storage, &admins?)?;
+
     Ok(Response::new())
 }
 
@@ -21,12 +30,7 @@ pub fn query(_deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
 }
 
 #[allow(dead_code)]
-pub fn execute(
-    _deps: DepsMut,
-    _env: Env,
-    _info: MessageInfo,
-    _msg: Empty
-) -> StdResult<Response> {
+pub fn execute(_deps: DepsMut, _env: Env, _info: MessageInfo, _msg: Empty) -> StdResult<Response> {
     unimplemented!()
 }
 
